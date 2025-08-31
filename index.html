@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio</title>
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: #f5f5f5;
+            overflow-x: hidden;
+        }
+
+        .toolbar {
+            background: #4a5568;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .toolbar h1 {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .controls button {
+            background: #2d3748;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .controls button:hover {
+            background: #1a202c;
+        }
+
+        .controls button:disabled {
+            background: #718096;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            color: #cbd5e0;
+            font-size: 14px;
+        }
+
+        .viewer-container {
+            margin-top: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            min-height: calc(100vh - 60px);
+        }
+
+        .pdf-viewer {
+            max-width: 100%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: center;
+        }
+
+        .page {
+            margin-bottom: 10px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .page canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            color: #666;
+            font-size: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .toolbar {
+                padding: 8px 15px;
+            }
+            
+            .toolbar h1 {
+                font-size: 16px;
+            }
+            
+            .controls {
+                gap: 5px;
+            }
+            
+            .controls button {
+                padding: 4px 8px;
+                font-size: 12px;
+            }
+            
+            .viewer-container {
+                padding: 10px;
+                margin-top: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <h1>Portfolio</h1>
+        <div class="controls">
+            <button id="prev-page" disabled>← Previous</button>
+            <span class="page-info">
+                <span id="page-num">-</span> / <span id="page-count">-</span>
+            </span>
+            <button id="next-page" disabled>Next →</button>
+            <button id="zoom-out">Zoom -</button>
+            <button id="zoom-in">Zoom +</button>
+        </div>
+    </div>
+
+    <div class="viewer-container">
+        <div class="pdf-viewer">
+            <div class="loading" id="loading">Loading PDF...</div>
+            <div id="pdf-container"></div>
+        </div>
+    </div>
+
+    <script>
+        // PDF.js configuration
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        let pdfDoc = null;
+        let pageNum = 1;
+        let pageIsRendering = false;
+        let pageNumIsPending = null;
+        let scale = 1.5;
+        let manualZoom = false;
+
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const pdfContainer = document.getElementById('pdf-container');
+        const loadingDiv = document.getElementById('loading');
+
+        // Get elements
+        const pageNumSpan = document.getElementById('page-num');
+        const pageCountSpan = document.getElementById('page-count');
+        const prevBtn = document.getElementById('prev-page');
+        const nextBtn = document.getElementById('next-page');
+        const zoomInBtn = document.getElementById('zoom-in');
+        const zoomOutBtn = document.getElementById('zoom-out');
+
+        // Calculate responsive scale
+        const getResponsiveScale = (page) => {
+            const viewport = page.getViewport({ scale: 1.0 });
+            const containerWidth = pdfContainer.parentElement.clientWidth - 40; // Account for padding
+            const containerHeight = window.innerHeight - 100; // Account for toolbar and padding
+            
+            const scaleX = containerWidth / viewport.width;
+            const scaleY = containerHeight / viewport.height;
+            
+            // Use the smaller scale to ensure the page fits entirely, with better defaults
+            const autoScale = Math.min(scaleX, scaleY, 3.0); // Increased cap to 3x
+            
+            return Math.max(autoScale, 1.0); // Increased minimum scale to 1.0 for better readability
+        };
+
+        // Render page
+        const renderPage = num => {
+            pageIsRendering = true;
+
+            pdfDoc.getPage(num).then(page => {
+                // Calculate responsive scale if not manually adjusted
+                if (!manualZoom) {
+                    scale = getResponsiveScale(page);
+                }
+                
+                const viewport = page.getViewport({ scale });
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                const renderCtx = {
+                    canvasContext: ctx,
+                    viewport
+                };
+
+                page.render(renderCtx).promise.then(() => {
+                    pageIsRendering = false;
+
+                    if (pageNumIsPending !== null) {
+                        renderPage(pageNumIsPending);
+                        pageNumIsPending = null;
+                    }
+                });
+
+                // Update page counters
+                pageNumSpan.textContent = num;
+            });
+        };
+
+        // Check for pages rendering
+        const queueRenderPage = num => {
+            if (pageIsRendering) {
+                pageNumIsPending = num;
+            } else {
+                renderPage(num);
+            }
+        };
+
+        // Show previous page
+        const showPrevPage = () => {
+            if (pageNum <= 1) return;
+            pageNum--;
+            queueRenderPage(pageNum);
+            updateButtons();
+        };
+
+        // Show next page
+        const showNextPage = () => {
+            if (pageNum >= pdfDoc.numPages) return;
+            pageNum++;
+            queueRenderPage(pageNum);
+            updateButtons();
+        };
+
+        // Update button states
+        const updateButtons = () => {
+            prevBtn.disabled = pageNum <= 1;
+            nextBtn.disabled = pageNum >= pdfDoc.numPages;
+        };
+
+        // Zoom functions
+        const zoomIn = () => {
+            manualZoom = true;
+            scale += 0.2;
+            queueRenderPage(pageNum);
+        };
+
+        const zoomOut = () => {
+            if (scale > 0.4) {
+                manualZoom = true;
+                scale -= 0.2;
+                queueRenderPage(pageNum);
+            }
+        };
+
+        // Button events
+        prevBtn.addEventListener('click', showPrevPage);
+        nextBtn.addEventListener('click', showNextPage);
+        zoomInBtn.addEventListener('click', zoomIn);
+        zoomOutBtn.addEventListener('click', zoomOut);
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowLeft':
+                    showPrevPage();
+                    break;
+                case 'ArrowRight':
+                    showNextPage();
+                    break;
+                case '+':
+                case '=':
+                    zoomIn();
+                    break;
+                case '-':
+                    zoomOut();
+                    break;
+            }
+        });
+
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            if (!manualZoom && pdfDoc) {
+                queueRenderPage(pageNum);
+            }
+        });
+
+        // Load PDF
+        pdfjsLib.getDocument('./portfolio.pdf').promise.then(pdfDoc_ => {
+            pdfDoc = pdfDoc_;
+            pageCountSpan.textContent = pdfDoc.numPages;
+            
+            loadingDiv.style.display = 'none';
+            pdfContainer.appendChild(canvas);
+            
+            renderPage(pageNum);
+            updateButtons();
+        }).catch(err => {
+            loadingDiv.textContent = 'Error loading PDF: ' + err.message;
+            console.error('Error loading PDF:', err);
+        });
+    </script>
+</body>
+</html>
