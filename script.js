@@ -255,19 +255,33 @@ const renderAllPagesForMobile = async () => {
             const page = await pdfDoc.getPage(pageNum);
             const viewport = page.getViewport({ scale: 1.0 });
             
-            // Calculate scale to fit mobile screen width
-            const containerWidth = mobileContainer.clientWidth - 30; // Account for padding
-            const scale = Math.min(containerWidth / viewport.width, 2.0);
+            const containerWidth = mobileContainer.clientWidth - 30;
+            const devicePixelRatio = window.devicePixelRatio || 1;
             
-            const scaledViewport = page.getViewport({ scale });
+            // Scale for high DPI displays and maintain quality
+            const baseScale = containerWidth / viewport.width;
+            const qualityScale = Math.max(baseScale * devicePixelRatio, 1.5); // Minimum 1.5x scale
+            const finalScale = Math.min(qualityScale, 3.0); // Cap at 3x for performance
+            
+            const scaledViewport = page.getViewport({ scale: finalScale });
             
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             canvas.height = scaledViewport.height;
             canvas.width = scaledViewport.width;
             
+            // Scale canvas display size to fit container while preserving quality
+            const displayWidth = containerWidth;
+            const displayHeight = (scaledViewport.height * displayWidth) / scaledViewport.width;
+            
             const pageContainer = document.createElement('div');
             pageContainer.className = 'mobile-page';
+            pageContainer.style.width = displayWidth + 'px';
+            pageContainer.style.height = displayHeight + 'px';
+            
+            canvas.style.width = displayWidth + 'px';
+            canvas.style.height = displayHeight + 'px';
+            
             pageContainer.appendChild(canvas);
             mobileContainer.appendChild(pageContainer);
             
