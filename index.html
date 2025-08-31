@@ -212,8 +212,18 @@
         .page canvas {
             display: block;
             width: 100%;
+            max-width: 100%;
             height: auto;
             transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        @media (max-width: 768px) {
+            .page canvas {
+                width: 100% !important;
+                max-width: calc(100vw - 30px);
+                height: auto !important;
+            }
         }
 
         .loading {
@@ -254,7 +264,61 @@
 
         @media (max-width: 768px) {
             .toolbar {
-                padding: 8px 15px;
+                padding: 15px;
+                justify-content: center;
+            }
+            
+            .toolbar h1 {
+                font-size: 18px;
+            }
+            
+            .controls {
+                display: none;
+            }
+            
+            .viewer-container {
+                margin-top: 60px;
+                padding: 0;
+                min-height: calc(100vh - 60px);
+                align-items: flex-start;
+            }
+            
+            .pdf-viewer {
+                width: 100%;
+                max-width: none;
+                display: block;
+            }
+            
+            .mobile-pages-container {
+                width: 100%;
+                padding: 15px;
+                box-sizing: border-box;
+            }
+            
+            .mobile-page {
+                margin-bottom: 20px;
+                width: 100%;
+                border-radius: 8px;
+                overflow: hidden;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                background: white;
+            }
+            
+            .mobile-page:last-child {
+                margin-bottom: 0;
+            }
+            
+            .mobile-page canvas {
+                width: 100% !important;
+                height: auto !important;
+                display: block;
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .toolbar {
+                padding: 10px 12px;
             }
             
             .toolbar h1 {
@@ -262,17 +326,23 @@
             }
             
             .controls {
-                gap: 5px;
+                gap: 10px;
             }
             
-            .controls button {
-                padding: 4px 8px;
+            .nav-group {
+                gap: 4px;
+            }
+            
+            .page-info {
+                min-width: 50px;
                 font-size: 12px;
+                padding: 6px 8px;
             }
             
             .viewer-container {
-                padding: 10px;
-                margin-top: 50px;
+                padding: 10px 8px;
+                margin-top: 100px;
+                min-height: calc(100vh - 100px);
             }
         }
     </style>
@@ -354,16 +424,24 @@
         // Calculate responsive scale
         const getResponsiveScale = (page) => {
             const viewport = page.getViewport({ scale: 1.0 });
-            const containerWidth = pdfContainer.parentElement.clientWidth - 40; // Account for padding
-            const containerHeight = window.innerHeight - 100; // Account for toolbar and padding
+            
+            // Get actual container dimensions
+            const container = pdfContainer.parentElement;
+            const containerWidth = container.clientWidth - 30; // Account for padding
+            const containerHeight = window.innerHeight - (window.innerWidth <= 768 ? 140 : 100); // Account for mobile toolbar height
             
             const scaleX = containerWidth / viewport.width;
             const scaleY = containerHeight / viewport.height;
             
-            // Use the smaller scale to ensure the page fits entirely, with better defaults
-            const autoScale = Math.min(scaleX, scaleY, 3.0); // Increased cap to 3x
+            // For mobile, prioritize fitting width and be more aggressive with scaling
+            const isMobile = window.innerWidth <= 768;
+            const maxScale = isMobile ? 2.0 : 3.0;
+            const minScale = isMobile ? 0.5 : 1.0;
             
-            return Math.max(autoScale, 1.0); // Increased minimum scale to 1.0 for better readability
+            // Use the smaller scale to ensure the page fits entirely
+            const autoScale = Math.min(scaleX, scaleY, maxScale);
+            
+            return Math.max(autoScale, minScale);
         };
 
         // Add page transition effect
@@ -514,6 +592,48 @@
             }
         });
 
+        // Check if mobile
+        const isMobile = () => window.innerWidth <= 768;
+
+        // Render all pages for mobile
+        const renderAllPagesForMobile = async () => {
+            const mobileContainer = document.createElement('div');
+            mobileContainer.className = 'mobile-pages-container';
+            pdfContainer.appendChild(mobileContainer);
+
+            for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+                try {
+                    const page = await pdfDoc.getPage(pageNum);
+                    const viewport = page.getViewport({ scale: 1.0 });
+                    
+                    // Calculate scale to fit mobile screen width
+                    const containerWidth = mobileContainer.clientWidth - 30; // Account for padding
+                    const scale = Math.min(containerWidth / viewport.width, 2.0);
+                    
+                    const scaledViewport = page.getViewport({ scale });
+                    
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.height = scaledViewport.height;
+                    canvas.width = scaledViewport.width;
+                    
+                    const pageContainer = document.createElement('div');
+                    pageContainer.className = 'mobile-page';
+                    pageContainer.appendChild(canvas);
+                    mobileContainer.appendChild(pageContainer);
+                    
+                    const renderContext = {
+                        canvasContext: ctx,
+                        viewport: scaledViewport
+                    };
+                    
+                    await page.render(renderContext).promise;
+                } catch (error) {
+                    console.error(`Error rendering page ${pageNum}:`, error);
+                }
+            }
+        };
+
         // Load PDF with enhanced loading state
         loadingDiv.innerHTML = '<span>Loading the portfolio...</span>';
         
@@ -531,20 +651,27 @@
             loadingDiv.style.opacity = '0';
             setTimeout(() => {
                 loadingDiv.style.display = 'none';
-                pdfContainer.appendChild(canvas);
                 
-                // Animate in the PDF
-                canvas.style.opacity = '0';
-                canvas.style.transform = 'scale(0.95)';
-                
-                renderPage(pageNum);
-                updateButtons();
-                
-                setTimeout(() => {
-                    canvas.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
-                    canvas.style.opacity = '1';
-                    canvas.style.transform = 'scale(1)';
-                }, 100);
+                if (isMobile()) {
+                    // Mobile: render all pages vertically
+                    renderAllPagesForMobile();
+                } else {
+                    // Desktop: single page navigation
+                    pdfContainer.appendChild(canvas);
+                    
+                    // Animate in the PDF
+                    canvas.style.opacity = '0';
+                    canvas.style.transform = 'scale(0.95)';
+                    
+                    renderPage(pageNum);
+                    updateButtons();
+                    
+                    setTimeout(() => {
+                        canvas.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+                        canvas.style.opacity = '1';
+                        canvas.style.transform = 'scale(1)';
+                    }, 100);
+                }
             }, 300);
         }).catch(err => {
             loadingDiv.innerHTML = '<span style="color: #e53e3e;">Error loading PDF: ' + err.message + '</span>';
