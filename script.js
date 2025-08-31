@@ -298,7 +298,7 @@ const renderAllPagesForMobile = async () => {
 };
 
 // Load PDF with enhanced loading state and progress
-loadingDiv.innerHTML = '<span>Loading the portfolio...</span><div class="progress-bar"><div class="progress-fill"></div></div>';
+loadingDiv.innerHTML = '<span>Loading portfolio...</span><div class="progress-bar"><div class="progress-fill"></div></div>';
 
 // Hide the CSS spinner since we're using progress bar
 loadingDiv.classList.add('no-spinner');
@@ -354,7 +354,7 @@ loadingTask.promise.then(pdfDoc_ => {
         }
     }, 300);
 }).catch(err => {
-    loadingDiv.innerHTML = '<span style="color: #e53e3e;">Error loading PDF: ' + err.message + '</span>';
+    loadingDiv.innerHTML = '<span style="color: #e53e3e;">Error loading portfolio: ' + err.message + '</span>';
     loadingDiv.style.animation = 'none';
     console.error('Error loading PDF:', err);
 });
