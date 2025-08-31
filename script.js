@@ -283,10 +283,25 @@ const renderAllPagesForMobile = async () => {
     }
 };
 
-// Load PDF with enhanced loading state
-loadingDiv.innerHTML = '<span>Loading the portfolio...</span>';
+// Load PDF with enhanced loading state and progress
+loadingDiv.innerHTML = '<span>Loading the portfolio...</span><div class="progress-bar"><div class="progress-fill"></div></div>';
 
-pdfjsLib.getDocument('./portfolio.pdf').promise.then(pdfDoc_ => {
+// Hide the CSS spinner since we're using progress bar
+loadingDiv.classList.add('no-spinner');
+
+// Add progress tracking
+const loadingTask = pdfjsLib.getDocument('./portfolio.pdf');
+loadingTask.onProgress = function(progress) {
+    if (progress.loaded && progress.total) {
+        const percent = (progress.loaded / progress.total) * 100;
+        const progressFill = document.querySelector('.progress-fill');
+        if (progressFill) {
+            progressFill.style.width = percent + '%';
+        }
+    }
+};
+
+loadingTask.promise.then(pdfDoc_ => {
     pdfDoc = pdfDoc_;
     pageCountSpan.textContent = pdfDoc.numPages;
     
