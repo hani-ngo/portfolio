@@ -1,3 +1,34 @@
+// Console message for fellow developers
+console.log(`
+%cHello there, fellow developer!
+
+%cI see you're curious about how this portfolio works. I'm Lê Hoàng Anh (Hani) Ngô. I believe in creating meaningful 
+digital experiences, and this is my way of sharing my work with the world.
+
+%cI'm passionate about:
+• Creating effective and enjoyable designs that tell a story
+• User experiences that feel effortless and smooth
+• Clean, maintainable code
+• Continuous learning and growth as a designer (graphic & web) and developer
+
+%cI'm on an active lookout for all opportunities that are related to graphic or web design, so if you're looking for
+someone who genuinely cares about craft, collaboration, and creating things that matter & happened to stumble upon
+this portfolio, I'd love to work with you :)
+
+%cSend me an email: hani@haningo.com
+Visit my website: https://haningo.com
+Figma link of this portfolio: https://www.figma.com/proto/mmLKKRH6OqeK1ckF6I7Bkl/Hani-Ngo_Portfolio-2025?page-id=0%3A1&node-id=68-454&p=f&viewport=240%2C495%2C0.03&t=u3S5CTszDtmp2psu-1&scaling=contain&content-scaling=fixed
+
+%cThanks for taking the time to look under the hood!
+`, 
+'color: #60a5fa; font-size: 16px; font-weight: bold;',
+'color: #e5e7eb; font-size: 13px; line-height: 1.4;',
+'color: #fbbf24; font-size: 13px; font-weight: 600;',
+'color: #f3f4f6; font-size: 13px; line-height: 1.5;',
+'color: #34d399; font-size: 13px; font-weight: 500;',
+'color: #d1d5db; font-size: 11px; font-style: italic; line-height: 1.3;'
+);
+
 // PDF.js configuration
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
