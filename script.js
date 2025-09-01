@@ -96,7 +96,6 @@ const getResponsiveScale = (page) => {
 	// Dynamic minimum scale based on screen resolution
 	// More granular breakpoints to handle various screen sizes properly
 	const screenWidth = window.innerWidth;
-	const screenHeight = window.innerHeight;
 	let minScale;
 
 	if (screenWidth <= 1366) {
