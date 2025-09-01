@@ -99,11 +99,11 @@ const getResponsiveScale = (page) => {
     let minScale;
     
     if (screenWidth <= 1440) {        // Small/medium screens (laptops)
-        minScale = 0.3;
-    } else if (screenWidth <= 1920) { // Large screens (desktop monitors)
         minScale = 0.5;
+    } else if (screenWidth <= 1920) { // Large screens (desktop monitors)
+        minScale = 0.6;
     } else {                          // Ultra-wide/4K screens
-        minScale = 0.8;
+        minScale = 0.9;
     }
     
     return Math.max(minScale, Math.min(scale, 4.0));
