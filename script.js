@@ -77,30 +77,24 @@ const nextBtn = document.getElementById('next-page');
 const zoomInBtn = document.getElementById('zoom-in');
 const zoomOutBtn = document.getElementById('zoom-out');
 
-// Calculate responsive scale
 const getResponsiveScale = (page) => {
     const viewport = page.getViewport({ scale: 1.0 });
     
-    // Get actual container dimensions
+    // Get the container that will hold the canvas
     const container = pdfContainer.parentElement;
-    const containerWidth = container.clientWidth - 30; // Account for padding
-    const containerHeight = window.innerHeight - (window.innerWidth <= 768 ? 140 : 100); // Account for mobile toolbar height
     
-    const scaleX = containerWidth / viewport.width;
-    const scaleY = containerHeight / viewport.height;
+    // Use most of the container space with a smaller safety margin
+    const containerWidth = container.clientWidth * 0.95;
+    const containerHeight = container.clientHeight * 0.95;
     
-    // For mobile, prioritize fitting width and be more aggressive with scaling
-    const isMobile = window.innerWidth <= 768;
-    const maxScale = isMobile ? 2.0 : 3.0;
-    const minScale = isMobile ? 0.5 : 1.0;
+    const scale = Math.min(
+        containerWidth / viewport.width,
+        containerHeight / viewport.height
+    );
     
-    // Use the smaller scale to ensure the page fits entirely
-    const autoScale = Math.min(scaleX, scaleY, maxScale);
-    
-    return Math.max(autoScale, minScale);
+    return Math.max(0.9, Math.min(scale, 4.0));
 };
 
-// Add page transition effect
 const addPageTransition = (direction) => {
     const pageContainer = pdfContainer.querySelector('.page');
     if (pageContainer) {
