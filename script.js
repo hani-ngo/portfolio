@@ -1,5 +1,5 @@
-// Console message for fellow developers
-console.log(`
+console.log(
+	`
 %cHello there, fellow developer!
 
 %cI see you're curious about how this portfolio works. I'm Lê Hoàng Anh (Hani) Ngô. I believe in creating meaningful 
@@ -20,17 +20,18 @@ Visit my website: https://haningo.com
 Figma link of this portfolio: https://www.figma.com/proto/mmLKKRH6OqeK1ckF6I7Bkl/Hani-Ngo_Portfolio-2025?page-id=0%3A1&node-id=68-454&p=f&viewport=240%2C495%2C0.03&t=u3S5CTszDtmp2psu-1&scaling=contain&content-scaling=fixed
 
 %cThanks for taking the time to look under the hood!
-`, 
-'color: #60a5fa; font-size: 16px; font-weight: bold;',
-'color: #e5e7eb; font-size: 13px; line-height: 1.4;',
-'color: #fbbf24; font-size: 13px; font-weight: 600;',
-'color: #f3f4f6; font-size: 13px; line-height: 1.5;',
-'color: #34d399; font-size: 13px; font-weight: 500;',
-'color: #d1d5db; font-size: 11px; font-style: italic; line-height: 1.3;'
+`,
+	"color: #60a5fa; font-size: 16px; font-weight: bold;",
+	"color: #e5e7eb; font-size: 13px; line-height: 1.4;",
+	"color: #fbbf24; font-size: 13px; font-weight: 600;",
+	"color: #f3f4f6; font-size: 13px; line-height: 1.5;",
+	"color: #34d399; font-size: 13px; font-weight: 500;",
+	"color: #d1d5db; font-size: 11px; font-style: italic; line-height: 1.3;",
 );
 
 // PDF.js configuration
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+	"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
 
 let pdfDoc = null;
 let pageNum = getInitialPage();
@@ -41,219 +42,232 @@ let manualZoom = false;
 
 // Get initial page from localStorage or default to 1
 function getInitialPage() {
-    try {
-        const savedPage = localStorage.getItem('portfolio-current-page');
-        if (savedPage) {
-            const page = parseInt(savedPage);
-            return page > 0 ? page : 1;
-        }
-    } catch (e) {
-        // localStorage might not be available
-        console.log('localStorage not available, starting from page 1');
-    }
-    return 1;
+	try {
+		const savedPage = localStorage.getItem("portfolio-current-page");
+		if (savedPage) {
+			const page = parseInt(savedPage);
+			return page > 0 ? page : 1;
+		}
+	} catch (e) {
+		// localStorage might not be available
+		console.log("localStorage not available, starting from page 1");
+	}
+	return 1;
 }
 
 // Save current page to localStorage
 function saveCurrentPage(pageNumber) {
-    try {
-        localStorage.setItem('portfolio-current-page', pageNumber.toString());
-    } catch (e) {
-        // localStorage might not be available, fail silently
-        console.log('Could not save page state');
-    }
+	try {
+		localStorage.setItem("portfolio-current-page", pageNumber.toString());
+	} catch (e) {
+		// localStorage might not be available, fail silently
+		console.log("Could not save page state");
+	}
 }
 
-const canvas = document.createElement('canvas');
-const ctx = canvas.getContext('2d');
-const pdfContainer = document.getElementById('pdf-container');
-const loadingDiv = document.getElementById('loading');
+const canvas = document.createElement("canvas");
+const ctx = canvas.getContext("2d");
+const pdfContainer = document.getElementById("pdf-container");
+const loadingDiv = document.getElementById("loading");
 
 // Get elements
-const pageNumSpan = document.getElementById('page-num');
-const pageCountSpan = document.getElementById('page-count');
-const prevBtn = document.getElementById('prev-page');
-const nextBtn = document.getElementById('next-page');
-const zoomInBtn = document.getElementById('zoom-in');
-const zoomOutBtn = document.getElementById('zoom-out');
+const pageNumSpan = document.getElementById("page-num");
+const pageCountSpan = document.getElementById("page-count");
+const prevBtn = document.getElementById("prev-page");
+const nextBtn = document.getElementById("next-page");
+const zoomInBtn = document.getElementById("zoom-in");
+const zoomOutBtn = document.getElementById("zoom-out");
 
 const getResponsiveScale = (page) => {
-    const viewport = page.getViewport({ scale: 1.0 });
-    
-    // Get the container that will hold the canvas
-    const container = pdfContainer.parentElement;
-    
-    // Use most of the container space with a smaller safety margin
-    const containerWidth = container.clientWidth * 0.95;
-    const containerHeight = container.clientHeight * 0.95;
-    
-    const scale = Math.min(
-        containerWidth / viewport.width,
-        containerHeight / viewport.height
-    );
-    
-    // Dynamic minimum scale based on screen size
-    // Smaller screens need lower minimums to prevent overflow
-    // Larger screens can have higher minimums for better quality
-    const screenWidth = window.innerWidth;
-    let minScale;
-    
-    if (screenWidth <= 1440) {        // Small/medium screens (laptops)
-        minScale = 0.5;
-    } else if (screenWidth <= 1920) { // Large screens (desktop monitors)
-        minScale = 0.6;
-    } else {                          // Ultra-wide/4K screens
-        minScale = 0.9;
-    }
-    
-    return Math.max(minScale, Math.min(scale, 4.0));
+	const viewport = page.getViewport({ scale: 1.0 });
+
+	// Get the container that will hold the canvas
+	const container = pdfContainer.parentElement;
+
+	// Use most of the container space with a smaller safety margin
+	const containerWidth = container.clientWidth * 0.95;
+	const containerHeight = container.clientHeight * 0.95;
+
+	const scale = Math.min(
+		containerWidth / viewport.width,
+		containerHeight / viewport.height,
+	);
+
+	// Dynamic minimum scale based on screen resolution
+	// More granular breakpoints to handle various screen sizes properly
+	const screenWidth = window.innerWidth;
+	const screenHeight = window.innerHeight;
+	let minScale;
+
+	if (screenWidth <= 1366) {
+		// 1366x768 (common laptop), 1280x1024, etc.
+		minScale = 0.4;
+	} else if (screenWidth <= 1440) {
+		// 1440x900 (MacBook Air 13"), 1440x1080
+		minScale = 0.5;
+	} else if (screenWidth <= 1680) {
+		// 1680x1050 (older iMacs), 1600x1200
+		minScale = 0.6;
+	} else if (screenWidth <= 1920) {
+		// 1920x1080 (Full HD), 1920x1200
+		minScale = 0.7;
+	} else if (screenWidth <= 2560) {
+		// 2560x1440 (1440p), 2560x1600 (MacBook Pro 16")
+		minScale = 0.8;
+	} else {
+		// 4K+ screens (3840x2160+), ultrawide
+		minScale = 0.9;
+	}
+
+	return Math.max(minScale, Math.min(scale, 4.0));
 };
 
 const addPageTransition = (direction) => {
-    const pageContainer = pdfContainer.querySelector('.page');
-    if (pageContainer) {
-        pageContainer.style.transform = direction === 'next' ? 'translateX(-20px)' : 'translateX(20px)';
-        pageContainer.style.opacity = '0.7';
-        
-        setTimeout(() => {
-            pageContainer.style.transform = 'translateX(0)';
-            pageContainer.style.opacity = '1';
-        }, 150);
-    }
+	const pageContainer = pdfContainer.querySelector(".page");
+	if (pageContainer) {
+		pageContainer.style.transform =
+			direction === "next" ? "translateX(-20px)" : "translateX(20px)";
+		pageContainer.style.opacity = "0.7";
+
+		setTimeout(() => {
+			pageContainer.style.transform = "translateX(0)";
+			pageContainer.style.opacity = "1";
+		}, 150);
+	}
 };
 
 // Render page
-const renderPage = num => {
-    pageIsRendering = true;
+const renderPage = (num) => {
+	pageIsRendering = true;
 
-    pdfDoc.getPage(num).then(page => {
-        // Calculate responsive scale if not manually adjusted
-        if (!manualZoom) {
-            scale = getResponsiveScale(page);
-        }
-        
-        const viewport = page.getViewport({ scale });
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
+	pdfDoc.getPage(num).then((page) => {
+		// Calculate responsive scale if not manually adjusted
+		if (!manualZoom) {
+			scale = getResponsiveScale(page);
+		}
 
-        const renderCtx = {
-            canvasContext: ctx,
-            viewport
-        };
+		const viewport = page.getViewport({ scale });
+		canvas.height = viewport.height;
+		canvas.width = viewport.width;
 
-        page.render(renderCtx).promise.then(() => {
-            pageIsRendering = false;
+		const renderCtx = {
+			canvasContext: ctx,
+			viewport,
+		};
 
-            if (pageNumIsPending !== null) {
-                renderPage(pageNumIsPending);
-                pageNumIsPending = null;
-            }
-        });
+		page.render(renderCtx).promise.then(() => {
+			pageIsRendering = false;
 
-        // Update page counters and save state
-        pageNumSpan.textContent = num;
-        saveCurrentPage(num);
-    });
+			if (pageNumIsPending !== null) {
+				renderPage(pageNumIsPending);
+				pageNumIsPending = null;
+			}
+		});
+
+		// Update page counters and save state
+		pageNumSpan.textContent = num;
+		saveCurrentPage(num);
+	});
 };
 
 // Check for pages rendering
-const queueRenderPage = num => {
-    if (pageIsRendering) {
-        pageNumIsPending = num;
-    } else {
-        renderPage(num);
-    }
+const queueRenderPage = (num) => {
+	if (pageIsRendering) {
+		pageNumIsPending = num;
+	} else {
+		renderPage(num);
+	}
 };
 
 // Show previous page
 const showPrevPage = () => {
-    if (pageNum <= 1) return;
-    addPageTransition('prev');
-    pageNum--;
-    queueRenderPage(pageNum);
-    updateButtons();
+	if (pageNum <= 1) return;
+	addPageTransition("prev");
+	pageNum--;
+	queueRenderPage(pageNum);
+	updateButtons();
 };
 
 // Show next page
 const showNextPage = () => {
-    if (pageNum >= pdfDoc.numPages) return;
-    addPageTransition('next');
-    pageNum++;
-    queueRenderPage(pageNum);
-    updateButtons();
+	if (pageNum >= pdfDoc.numPages) return;
+	addPageTransition("next");
+	pageNum++;
+	queueRenderPage(pageNum);
+	updateButtons();
 };
 
 // Update button states
 const updateButtons = () => {
-    prevBtn.disabled = pageNum <= 1;
-    nextBtn.disabled = pageNum >= pdfDoc.numPages;
+	prevBtn.disabled = pageNum <= 1;
+	nextBtn.disabled = pageNum >= pdfDoc.numPages;
 };
 
 // Zoom functions
 const zoomIn = () => {
-    manualZoom = true;
-    scale += 0.2;
-    queueRenderPage(pageNum);
+	manualZoom = true;
+	scale += 0.2;
+	queueRenderPage(pageNum);
 };
 
 const zoomOut = () => {
-    if (scale > 0.4) {
-        manualZoom = true;
-        scale -= 0.2;
-        queueRenderPage(pageNum);
-    }
+	if (scale > 0.4) {
+		manualZoom = true;
+		scale -= 0.2;
+		queueRenderPage(pageNum);
+	}
 };
 
 // Add click feedback
 const addClickFeedback = (button) => {
-    button.style.transform = 'scale(0.95)';
-    setTimeout(() => {
-        button.style.transform = '';
-    }, 150);
+	button.style.transform = "scale(0.95)";
+	setTimeout(() => {
+		button.style.transform = "";
+	}, 150);
 };
 
 // Button events
-prevBtn.addEventListener('click', (e) => {
-    addClickFeedback(e.target);
-    showPrevPage();
+prevBtn.addEventListener("click", (e) => {
+	addClickFeedback(e.target);
+	showPrevPage();
 });
-nextBtn.addEventListener('click', (e) => {
-    addClickFeedback(e.target);
-    showNextPage();
+nextBtn.addEventListener("click", (e) => {
+	addClickFeedback(e.target);
+	showNextPage();
 });
-zoomInBtn.addEventListener('click', (e) => {
-    addClickFeedback(e.target);
-    zoomIn();
+zoomInBtn.addEventListener("click", (e) => {
+	addClickFeedback(e.target);
+	zoomIn();
 });
-zoomOutBtn.addEventListener('click', (e) => {
-    addClickFeedback(e.target);
-    zoomOut();
+zoomOutBtn.addEventListener("click", (e) => {
+	addClickFeedback(e.target);
+	zoomOut();
 });
 
 // Keyboard navigation
-document.addEventListener('keydown', (e) => {
-    switch(e.key) {
-        case 'ArrowLeft':
-            showPrevPage();
-            break;
-        case 'ArrowRight':
-            showNextPage();
-            break;
-        case '+':
-        case '=':
-            zoomIn();
-            break;
-        case '-':
-            zoomOut();
-            break;
-    }
+document.addEventListener("keydown", (e) => {
+	switch (e.key) {
+		case "ArrowLeft":
+			showPrevPage();
+			break;
+		case "ArrowRight":
+			showNextPage();
+			break;
+		case "+":
+		case "=":
+			zoomIn();
+			break;
+		case "-":
+			zoomOut();
+			break;
+	}
 });
 
 // Window resize handler
-window.addEventListener('resize', () => {
-    if (!manualZoom && pdfDoc) {
-        queueRenderPage(pageNum);
-    }
+window.addEventListener("resize", () => {
+	if (!manualZoom && pdfDoc) {
+		queueRenderPage(pageNum);
+	}
 });
 
 // Check if mobile
@@ -261,139 +275,146 @@ const isMobile = () => window.innerWidth <= 768;
 
 // Mobile notification functionality
 const showMobileNotification = () => {
-    if (isMobile() && !localStorage.getItem('mobile-notification-dismissed')) {
-        const notification = document.getElementById('mobile-notification');
-        notification.classList.add('show');
-        
-        // Close notification functionality
-        const closeBtn = document.getElementById('notification-close');
-        const closeNotification = () => {
-            notification.classList.remove('show');
-            localStorage.setItem('mobile-notification-dismissed', 'true');
-        };
-        
-        closeBtn.addEventListener('click', closeNotification);
-        
-        // Auto-hide after 8 seconds
-        setTimeout(() => {
-            if (notification.classList.contains('show')) {
-                closeNotification();
-            }
-        }, 8000);
-    }
+	if (isMobile() && !localStorage.getItem("mobile-notification-dismissed")) {
+		const notification = document.getElementById("mobile-notification");
+		notification.classList.add("show");
+
+		// Close notification functionality
+		const closeBtn = document.getElementById("notification-close");
+		const closeNotification = () => {
+			notification.classList.remove("show");
+			localStorage.setItem("mobile-notification-dismissed", "true");
+		};
+
+		closeBtn.addEventListener("click", closeNotification);
+
+		// Auto-hide after 8 seconds
+		setTimeout(() => {
+			if (notification.classList.contains("show")) {
+				closeNotification();
+			}
+		}, 8000);
+	}
 };
 
 // Render all pages for mobile
 const renderAllPagesForMobile = async () => {
-    const mobileContainer = document.createElement('div');
-    mobileContainer.className = 'mobile-pages-container';
-    pdfContainer.appendChild(mobileContainer);
+	const mobileContainer = document.createElement("div");
+	mobileContainer.className = "mobile-pages-container";
+	pdfContainer.appendChild(mobileContainer);
 
-    for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
-        try {
-            const page = await pdfDoc.getPage(pageNum);
-            const viewport = page.getViewport({ scale: 1.0 });
-            
-            const containerWidth = mobileContainer.clientWidth - 30;
-            const devicePixelRatio = window.devicePixelRatio || 1;
-            
-            // Scale for high DPI displays and maintain quality
-            const baseScale = containerWidth / viewport.width;
-            const qualityScale = Math.max(baseScale * devicePixelRatio, 1.5); // Minimum 1.5x scale
-            const finalScale = Math.min(qualityScale, 3.0); // Cap at 3x for performance
-            
-            const scaledViewport = page.getViewport({ scale: finalScale });
-            
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.height = scaledViewport.height;
-            canvas.width = scaledViewport.width;
-            
-            // Scale canvas display size to fit container while preserving quality
-            const displayWidth = containerWidth;
-            const displayHeight = (scaledViewport.height * displayWidth) / scaledViewport.width;
-            
-            const pageContainer = document.createElement('div');
-            pageContainer.className = 'mobile-page';
-            pageContainer.style.width = displayWidth + 'px';
-            pageContainer.style.height = displayHeight + 'px';
-            
-            canvas.style.width = displayWidth + 'px';
-            canvas.style.height = displayHeight + 'px';
-            
-            pageContainer.appendChild(canvas);
-            mobileContainer.appendChild(pageContainer);
-            
-            const renderContext = {
-                canvasContext: ctx,
-                viewport: scaledViewport
-            };
-            
-            await page.render(renderContext).promise;
-        } catch (error) {
-            console.error(`Error rendering page ${pageNum}:`, error);
-        }
-    }
+	for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+		try {
+			const page = await pdfDoc.getPage(pageNum);
+			const viewport = page.getViewport({ scale: 1.0 });
+
+			const containerWidth = mobileContainer.clientWidth - 30;
+			const devicePixelRatio = window.devicePixelRatio || 1;
+
+			// Scale for high DPI displays and maintain quality
+			const baseScale = containerWidth / viewport.width;
+			const qualityScale = Math.max(baseScale * devicePixelRatio, 1.5); // Minimum 1.5x scale
+			const finalScale = Math.min(qualityScale, 3.0); // Cap at 3x for performance
+
+			const scaledViewport = page.getViewport({ scale: finalScale });
+
+			const canvas = document.createElement("canvas");
+			const ctx = canvas.getContext("2d");
+			canvas.height = scaledViewport.height;
+			canvas.width = scaledViewport.width;
+
+			// Scale canvas display size to fit container while preserving quality
+			const displayWidth = containerWidth;
+			const displayHeight =
+				(scaledViewport.height * displayWidth) / scaledViewport.width;
+
+			const pageContainer = document.createElement("div");
+			pageContainer.className = "mobile-page";
+			pageContainer.style.width = displayWidth + "px";
+			pageContainer.style.height = displayHeight + "px";
+
+			canvas.style.width = displayWidth + "px";
+			canvas.style.height = displayHeight + "px";
+
+			pageContainer.appendChild(canvas);
+			mobileContainer.appendChild(pageContainer);
+
+			const renderContext = {
+				canvasContext: ctx,
+				viewport: scaledViewport,
+			};
+
+			await page.render(renderContext).promise;
+		} catch (error) {
+			console.error(`Error rendering page ${pageNum}:`, error);
+		}
+	}
 };
 
 // Load PDF with enhanced loading state and progress
-loadingDiv.innerHTML = '<span>Loading portfolio...</span><div class="progress-bar"><div class="progress-fill"></div></div>';
+loadingDiv.innerHTML =
+	'<span>Loading portfolio...</span><div class="progress-bar"><div class="progress-fill"></div></div>';
 
 // Hide the CSS spinner since we're using progress bar
-loadingDiv.classList.add('no-spinner');
+loadingDiv.classList.add("no-spinner");
 
 // Add progress tracking
-const loadingTask = pdfjsLib.getDocument('./portfolio.pdf');
+const loadingTask = pdfjsLib.getDocument("./portfolio.pdf");
 loadingTask.onProgress = function(progress) {
-    if (progress.loaded && progress.total) {
-        const percent = (progress.loaded / progress.total) * 100;
-        const progressFill = document.querySelector('.progress-fill');
-        if (progressFill) {
-            progressFill.style.width = percent + '%';
-        }
-    }
+	if (progress.loaded && progress.total) {
+		const percent = (progress.loaded / progress.total) * 100;
+		const progressFill = document.querySelector(".progress-fill");
+		if (progressFill) {
+			progressFill.style.width = percent + "%";
+		}
+	}
 };
 
-loadingTask.promise.then(pdfDoc_ => {
-    pdfDoc = pdfDoc_;
-    pageCountSpan.textContent = pdfDoc.numPages;
-    
-    // Validate page number against total pages
-    if (pageNum > pdfDoc.numPages) {
-        pageNum = 1;
-        saveCurrentPage(pageNum);
-    }
-    
-    // Smooth fade out of loading
-    loadingDiv.style.opacity = '0';
-    setTimeout(() => {
-        loadingDiv.style.display = 'none';
-        
-        if (isMobile()) {
-            // Mobile: render all pages vertically
-            renderAllPagesForMobile();
-            // Show mobile notification after a brief delay
-            setTimeout(showMobileNotification, 1000);
-        } else {
-            // Desktop: single page navigation
-            pdfContainer.appendChild(canvas);
-            
-            // Animate in the PDF
-            canvas.style.opacity = '0';
-            canvas.style.transform = 'scale(0.95)';
-            
-            renderPage(pageNum);
-            updateButtons();
-            
-            setTimeout(() => {
-                canvas.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
-                canvas.style.opacity = '1';
-                canvas.style.transform = 'scale(1)';
-            }, 100);
-        }
-    }, 300);
-}).catch(err => {
-    loadingDiv.innerHTML = '<span style="color: #e53e3e;">Error loading portfolio: ' + err.message + '</span>';
-    loadingDiv.style.animation = 'none';
-    console.error('Error loading PDF:', err);
-});
+loadingTask.promise
+	.then((pdfDoc_) => {
+		pdfDoc = pdfDoc_;
+		pageCountSpan.textContent = pdfDoc.numPages;
+
+		// Validate page number against total pages
+		if (pageNum > pdfDoc.numPages) {
+			pageNum = 1;
+			saveCurrentPage(pageNum);
+		}
+
+		// Smooth fade out of loading
+		loadingDiv.style.opacity = "0";
+		setTimeout(() => {
+			loadingDiv.style.display = "none";
+
+			if (isMobile()) {
+				// Mobile: render all pages vertically
+				renderAllPagesForMobile();
+				// Show mobile notification after a brief delay
+				setTimeout(showMobileNotification, 1000);
+			} else {
+				// Desktop: single page navigation
+				pdfContainer.appendChild(canvas);
+
+				// Animate in the PDF
+				canvas.style.opacity = "0";
+				canvas.style.transform = "scale(0.95)";
+
+				renderPage(pageNum);
+				updateButtons();
+
+				setTimeout(() => {
+					canvas.style.transition = "all 0.6s cubic-bezier(0.4, 0, 0.2, 1)";
+					canvas.style.opacity = "1";
+					canvas.style.transform = "scale(1)";
+				}, 100);
+			}
+		}, 300);
+	})
+	.catch((err) => {
+		loadingDiv.innerHTML =
+			'<span style="color: #e53e3e;">Error loading portfolio: ' +
+			err.message +
+			"</span>";
+		loadingDiv.style.animation = "none";
+		console.error("Error loading PDF:", err);
+	});

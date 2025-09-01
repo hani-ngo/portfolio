@@ -1,82 +1,107 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Portfolio | Lê Hoàng Anh Ngô</title>
-    <meta name="description" content="My interactive portfolio showcasing design, development, and creative work">
-    <meta name="author" content="Lê Hoàng Anh Ngô">
-    
+    <meta
+      name="description"
+      content="My interactive portfolio showcasing design, development, and creative work"
+    />
+    <meta name="author" content="Lê Hoàng Anh Ngô" />
+
     <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://portfolio.haningo.com/">
-    <meta property="og:title" content="Portfolio | Lê Hoàng Anh Ngô">
-    <meta property="og:description" content="My interactive portfolio showcasing design, development, and creative work">
-    <meta property="og:image" content="https://portfolio.haningo.com/og-image.png">
-    
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://portfolio.haningo.com/" />
+    <meta property="og:title" content="Portfolio | Lê Hoàng Anh Ngô" />
+    <meta
+      property="og:description"
+      content="My interactive portfolio showcasing design, development, and creative work"
+    />
+    <meta
+      property="og:image"
+      content="https://portfolio.haningo.com/og-image.png"
+    />
+
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://portfolio.haningo.com/">
-    <meta property="twitter:title" content="Portfolio | Lê Hoàng Anh Ngô">
-    <meta property="twitter:description" content="My interactive portfolio showcasing design, development, and creative work">
-    <meta property="twitter:image" content="https://portfolio.haningo.com/og-image.png">
-    
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <link rel="icon" type="image/png" href="favicon.png">
-    
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://portfolio.haningo.com/" />
+    <meta property="twitter:title" content="Portfolio | Lê Hoàng Anh Ngô" />
+    <meta
+      property="twitter:description"
+      content="My interactive portfolio showcasing design, development, and creative work"
+    />
+    <meta
+      property="twitter:image"
+      content="https://portfolio.haningo.com/og-image.png"
+    />
+
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+
     <!-- Preload critical resources -->
-    <link rel="preload" href="style.css" as="style">
-    <link rel="preload" href="portfolio.pdf" as="fetch" crossorigin>
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" as="script">
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js" as="script">
-    
+    <link rel="preload" href="style.css" as="style" />
+    <link rel="preload" href="portfolio.pdf" as="fetch" crossorigin />
+    <link
+      rel="preload"
+      href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"
+      as="script"
+    />
+    <link
+      rel="preload"
+      href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"
+      as="script"
+    />
+
     <!-- Performance hints -->
-    <meta http-equiv="Cache-Control" content="public, max-age=86400">
-    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
-    
-    <link rel="stylesheet" href="style.css">
+    <meta http-equiv="Cache-Control" content="public, max-age=86400" />
+    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com" />
+
+    <link rel="stylesheet" href="style.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-</head>
-<body>
+  </head>
+  <body>
     <div class="toolbar">
-        <div class="title-section">
-            <h1>Portfolio | Lê Hoàng Anh Ngô</h1>
-            <a href="mailto:hani@haningo.com" class="email-link">✉ hani@haningo.com</a>
+      <div class="title-section">
+        <h1>Portfolio | Lê Hoàng Anh Ngô</h1>
+        <a href="mailto:hani@haningo.com" class="email-link"
+          >✉ hani@haningo.com</a
+        >
+      </div>
+      <div class="controls">
+        <div class="nav-group">
+          <button id="prev-page" disabled>←</button>
+          <span class="page-info">
+            <span id="page-num">-</span> / <span id="page-count">-</span>
+          </span>
+          <button id="next-page" disabled>→</button>
         </div>
-        <div class="controls">
-            <div class="nav-group">
-                <button id="prev-page" disabled>←</button>
-                <span class="page-info">
-                    <span id="page-num">-</span> / <span id="page-count">-</span>
-                </span>
-                <button id="next-page" disabled>→</button>
-            </div>
-            <div class="zoom-group">
-                <button id="zoom-out">−</button>
-                <button id="zoom-in">+</button>
-            </div>
+        <div class="zoom-group">
+          <button id="zoom-out">−</button>
+          <button id="zoom-in">+</button>
         </div>
+      </div>
     </div>
 
     <!-- Mobile Info Notification -->
     <div id="mobile-notification" class="mobile-notification">
-        <div class="notification-content">
-            <span class="notification-icon">📱</span>
-            <div class="notification-text">
-                <strong>Mobile device detected</strong><br>
-                <small>Best viewed on desktop • Scroll down to browse</small>
-            </div>
-            <button class="notification-close" id="notification-close">×</button>
+      <div class="notification-content">
+        <span class="notification-icon">📱</span>
+        <div class="notification-text">
+          <strong>Mobile device detected</strong><br />
+          <small>Best viewed on desktop • Scroll down to browse</small>
         </div>
+        <button class="notification-close" id="notification-close">×</button>
+      </div>
     </div>
 
     <div class="viewer-container">
-        <div class="pdf-viewer">
-            <div class="loading" id="loading">Loading portfolio...</div>
-            <div id="pdf-container"></div>
-        </div>
+      <div class="pdf-viewer">
+        <div class="loading" id="loading">Loading portfolio...</div>
+        <div id="pdf-container"></div>
+      </div>
     </div>
 
     <script src="script.js"></script>
-</body>
+  </body>
 </html>
