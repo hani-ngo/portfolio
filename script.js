@@ -92,7 +92,21 @@ const getResponsiveScale = (page) => {
         containerHeight / viewport.height
     );
     
-    return Math.max(0.5, Math.min(scale, 4.0));
+    // Dynamic minimum scale based on screen size
+    // Smaller screens need lower minimums to prevent overflow
+    // Larger screens can have higher minimums for better quality
+    const screenWidth = window.innerWidth;
+    let minScale;
+    
+    if (screenWidth <= 1440) {        // Small/medium screens (laptops)
+        minScale = 0.3;
+    } else if (screenWidth <= 1920) { // Large screens (desktop monitors)
+        minScale = 0.5;
+    } else {                          // Ultra-wide/4K screens
+        minScale = 0.8;
+    }
+    
+    return Math.max(minScale, Math.min(scale, 4.0));
 };
 
 const addPageTransition = (direction) => {
