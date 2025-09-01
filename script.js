@@ -66,7 +66,7 @@ function saveCurrentPage(pageNumber) {
 }
 
 const canvas = document.createElement("canvas");
-const ctx = canvas.getContext("2d");
+const ctx = canvas.getContext("2d", { willReadFrequently: true });
 const pdfContainer = document.getElementById("pdf-container");
 const loadingDiv = document.getElementById("loading");
 
@@ -318,7 +318,7 @@ const renderAllPagesForMobile = async () => {
 			const scaledViewport = page.getViewport({ scale: finalScale });
 
 			const canvas = document.createElement("canvas");
-			const ctx = canvas.getContext("2d");
+			const ctx = canvas.getContext("2d", { willReadFrequently: true });
 			canvas.height = scaledViewport.height;
 			canvas.width = scaledViewport.width;
 
