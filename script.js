@@ -92,7 +92,7 @@ const getResponsiveScale = (page) => {
         containerHeight / viewport.height
     );
     
-    return Math.max(0.9, Math.min(scale, 4.0));
+    return Math.max(0.5, Math.min(scale, 4.0));
 };
 
 const addPageTransition = (direction) => {
