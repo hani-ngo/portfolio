@@ -68,9 +68,8 @@
           <button id="home-page" style="display: none;" title="Back to page 1">⌂<span class="tooltip">Back to page 1</span></button>
           <button id="prev-page" disabled>←</button>
           <span class="page-info">
-            <span id="page-num-display" class="clickable-page">-</span>
-            <input id="page-num-input" type="number" min="1" style="display: none;">
-            / <span id="page-count">-</span>
+            <span id="page-display" class="clickable-page-full" tabindex="0" role="button" aria-label="Click to edit page number">- / -</span>
+            <input id="page-num-input" type="number" min="1" style="display: none;" aria-label="Enter page number">
           </span>
           <button id="next-page" disabled>→</button>
         </div>
@@ -83,14 +82,7 @@
             id="download-pdf"
             href="portfolio.pdf"
             title="Download PDF"
-            onclick="
-              const d = new Date();
-              const yyyy = d.getFullYear();
-              const mm = String(d.getMonth() + 1).padStart(2, '0');
-              const dd = String(d.getDate()).padStart(2, '0');
-              this.setAttribute('download', `Le_Hoang_Anh_Ngo_Portfolio_${yyyy}_${mm}_${dd}.pdf`);
-            "
-          >PDF↓<span class="tooltip">Download PDF file</span></a>
+          >PDF ↓<span class="tooltip">Download PDF file</span></a>
         </div>
       </div>
     </div>

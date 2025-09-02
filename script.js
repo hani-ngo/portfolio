@@ -21,11 +21,11 @@ Figma link of this portfolio: https://www.figma.com/proto/mmLKKRH6OqeK1ckF6I7Bkl
 
 %cThanks for taking the time to look under the hood!
 `,
-	"color: #3b82f6; font-size: 16px; font-weight: bold;",
-	"color:rgb(255, 91, 159); font-size: 13px; line-height: 1.4;",
-	"color: #f59e0b; font-size: 13px; font-weight: 600;",
-	"color: #06b6d4; font-size: 13px; line-height: 1.5;",
-	"color: #10b981; font-size: 13px; font-weight: 500;",
+	"color: #60a5fa; font-size: 16px; font-weight: bold;",
+	"color: #10b981; font-size: 13px; line-height: 1.4;",
+	"color: #7dd3fc; font-size: 13px; font-weight: 600;",
+	"color: #10b981; font-size: 13px; line-height: 1.5;",
+	"color: #7dd3fc; font-size: 13px; font-weight: 500;",
 	"color: #f97316; font-size: 11px; font-style: italic; line-height: 1.3;",
 );
 
@@ -71,15 +71,30 @@ const pdfContainer = document.getElementById("pdf-container");
 const loadingDiv = document.getElementById("loading");
 
 // getting elements
-const pageNumDisplay = document.getElementById("page-num-display");
-const pageNumInput = document.getElementById("page-num-input");
-const pageCountSpan = document.getElementById("page-count");
-const homeBtn = document.getElementById("home-page");
-const prevBtn = document.getElementById("prev-page");
-const nextBtn = document.getElementById("next-page");
-const downloadBtn = document.getElementById("download-pdf");
-const zoomInBtn = document.getElementById("zoom-in");
-const zoomOutBtn = document.getElementById("zoom-out");
+const pageDisplay = document.getElementById("page-display");      // the clickable "13 / 14" text display that shows current page info
+const pageNumInput = document.getElementById("page-num-input");   // the input field that replaces pageDisplay when editing page number
+const homeBtn = document.getElementById("home-page");            // the home button that goes to the first page
+const prevBtn = document.getElementById("prev-page");            // the previous button that goes to the previous page
+const nextBtn = document.getElementById("next-page");            // the next button that goes to the next page
+const downloadBtn = document.getElementById("download-pdf");      // the download button that downloads the portfolio
+const zoomInBtn = document.getElementById("zoom-in");            // the zoom in button that zooms in the portfolio
+const zoomOutBtn = document.getElementById("zoom-out");            // the zoom out button that zooms out the portfolio
+
+// storing total pages for display updates
+let totalPages = 0;
+
+// setting download filename with current date
+const setDownloadFilename = () => {
+	const d = new Date();
+	const yyyy = d.getFullYear();
+	const mm = String(d.getMonth() + 1).padStart(2, '0');
+	const dd = String(d.getDate()).padStart(2, '0');
+	downloadBtn.setAttribute('download', `Le_Hoang_Anh_Ngo_Portfolio_${yyyy}_${mm}_${dd}.pdf`);
+};
+
+// setting initial filename and updating it periodically (in case user keeps page open past midnight)
+setDownloadFilename();
+setInterval(setDownloadFilename, 60000); // updating every minute in case user keeps page open past midnight
 
 const getResponsiveScale = (page) => {
 	const viewport = page.getViewport({ scale: 1.0 });
@@ -167,7 +182,7 @@ const renderPage = (num) => {
 		});
 
 		// updating page counters and saving state
-		pageNumDisplay.textContent = num;
+		pageDisplay.innerHTML = `${num} / ${totalPages}`;  // updating the "X / 14" display text
 		saveCurrentPage(num);
 		updateButtons();
 	});
@@ -305,6 +320,8 @@ nextBtn.addEventListener("click", (e) => {
 });
 downloadBtn.addEventListener("click", (e) => {
 	addClickFeedback(e.target);
+	// ensuring filename is current right before download
+	setDownloadFilename();
 	// download functionality is handled by the browser via the download attribute
 });
 zoomInBtn.addEventListener("click", (e) => {
@@ -316,27 +333,38 @@ zoomOutBtn.addEventListener("click", (e) => {
 	zoomOut();
 });
 
-// page number input functionality
-pageNumDisplay.addEventListener("click", () => {
-	pageNumDisplay.style.display = "none";
-	pageNumInput.style.display = "block";
-	pageNumInput.value = pageNum;
-	pageNumInput.max = pdfDoc ? pdfDoc.numPages : 999;
-	pageNumInput.focus();
-	pageNumInput.select();
+// page number input functionality - content replace approach
+// when user clicks the "13 / 14" display, it gets hidden and replaced with an input field
+const activatePageInput = () => {
+	pageDisplay.style.display = "none";              // hiding the "X / 14" text display
+	pageNumInput.style.display = "block";            // showing the input field in its place
+	pageNumInput.value = pageNum;                     // pre-filling input with current page (e.g., "13")
+	pageNumInput.max = pdfDoc ? pdfDoc.numPages : 99; // setting max allowed value
+	pageNumInput.focus();                             // focusing the input
+	pageNumInput.select();                            // selecting all text for easy editing
+};
+
+pageDisplay.addEventListener("click", activatePageInput);
+
+// keyboard accessibility for pageDisplay
+pageDisplay.addEventListener("keydown", (e) => {
+	if (e.key === "Enter" || e.key === " ") {
+		e.preventDefault();
+		activatePageInput();
+	}
 });
 
-// handling input submission
+// handling input submission - restoring display and navigating if valid
 const submitPageInput = () => {
 	const targetPage = pageNumInput.value;
-	pageNumInput.style.display = "none";
-	pageNumDisplay.style.display = "inline";
+	pageNumInput.style.display = "none";             // hiding the input field
+	pageDisplay.style.display = "inline-block";      // showing the "X / 14" display again
 	
 	if (targetPage && goToPage(targetPage)) {
-		// successfully navigated to new page
+		// successfully navigated to new page - pageDisplay will be updated by renderPage()
 	} else {
-		// invalid page, reset display
-		pageNumDisplay.textContent = pageNum;
+		// invalid page, reset display to current page
+		pageDisplay.innerHTML = `${pageNum} / ${totalPages}`;
 	}
 };
 
@@ -346,7 +374,7 @@ pageNumInput.addEventListener("keydown", (e) => {
 		submitPageInput();
 	} else if (e.key === "Escape") {
 		pageNumInput.style.display = "none";
-		pageNumDisplay.style.display = "inline";
+		pageDisplay.style.display = "inline-block";
 	}
 });
 
@@ -482,7 +510,7 @@ loadingTask.onProgress = function(progress) {
 loadingTask.promise
 	.then((pdfDoc_) => {
 		pdfDoc = pdfDoc_;
-		pageCountSpan.textContent = pdfDoc.numPages;
+		totalPages = pdfDoc.numPages;
 
 		// validating page number against total pages
 		if (pageNum > pdfDoc.numPages) {
