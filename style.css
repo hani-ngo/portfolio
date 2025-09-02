@@ -68,22 +68,29 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
 }
 
 .nav-group {
   display: flex;
-  gap: 8px;
+  gap: 6px;
+  align-items: center;
+}
+
+.document-actions {
+  display: flex;
+  gap: 6px;
   align-items: center;
 }
 
 .zoom-group {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   align-items: center;
 }
 
-.controls button {
+.controls button,
+.controls a {
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(10px);
   color: #333;
@@ -101,7 +108,36 @@ body {
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   letter-spacing: 0.2px;
-  min-width: 80px;
+  min-width: 40px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Navigation button sizes */
+#home-page,
+#prev-page,
+#next-page {
+  font-size: 16px !important;
+  font-weight: 500;
+  min-width: 40px;
+  width: 40px;
+  height: 36px;
+  padding: 0;
+}
+
+.document-actions a {
+  min-width: 50px;
+  height: 36px;
+  border-radius: 8px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
 .zoom-group button {
@@ -117,7 +153,8 @@ body {
   font-weight: 600;
 }
 
-.controls button::before {
+.controls button::before,
+.controls a::before {
   content: "";
   position: absolute;
   top: 0;
@@ -133,18 +170,21 @@ body {
   transition: left 0.5s ease;
 }
 
-.controls button:hover::before {
+.controls button:hover::before,
+.controls a:hover::before {
   left: 100%;
 }
 
-.controls button:hover {
+.controls button:hover,
+.controls a:hover {
   background: rgba(255, 255, 255, 0.9);
   border-color: rgba(0, 0, 0, 0.12);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.controls button:active {
+.controls button:active,
+.controls a:active {
   transform: translateY(0);
   transition: all 0.1s ease;
 }
@@ -178,7 +218,44 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   letter-spacing: 0.2px;
   text-align: center;
-  min-width: 80px;
+  width: 85px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* page number input functionality inside the page number display */
+.clickable-page {
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.clickable-page:hover {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+#page-num-input {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 35px;
+  height: 24px;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 4px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  outline: none;
+}
+
+#page-num-input:focus {
+  border-color: rgba(59, 130, 246, 0.6);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }
 
 .viewer-container {

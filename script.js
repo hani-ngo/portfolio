@@ -21,12 +21,12 @@ Figma link of this portfolio: https://www.figma.com/proto/mmLKKRH6OqeK1ckF6I7Bkl
 
 %cThanks for taking the time to look under the hood!
 `,
-	"color: #60a5fa; font-size: 16px; font-weight: bold;",
-	"color: #e5e7eb; font-size: 13px; line-height: 1.4;",
-	"color: #fbbf24; font-size: 13px; font-weight: 600;",
-	"color: #f3f4f6; font-size: 13px; line-height: 1.5;",
-	"color: #34d399; font-size: 13px; font-weight: 500;",
-	"color: #d1d5db; font-size: 11px; font-style: italic; line-height: 1.3;",
+	"color: #3b82f6; font-size: 16px; font-weight: bold;",
+	"color:rgb(255, 91, 159); font-size: 13px; line-height: 1.4;",
+	"color: #f59e0b; font-size: 13px; font-weight: 600;",
+	"color: #06b6d4; font-size: 13px; line-height: 1.5;",
+	"color: #10b981; font-size: 13px; font-weight: 500;",
+	"color: #f97316; font-size: 11px; font-style: italic; line-height: 1.3;",
 );
 
 // PDF.js configuration
@@ -71,11 +71,13 @@ const pdfContainer = document.getElementById("pdf-container");
 const loadingDiv = document.getElementById("loading");
 
 // getting elements
-const pageNumSpan = document.getElementById("page-num");
+const pageNumDisplay = document.getElementById("page-num-display");
+const pageNumInput = document.getElementById("page-num-input");
 const pageCountSpan = document.getElementById("page-count");
 const homeBtn = document.getElementById("home-page");
 const prevBtn = document.getElementById("prev-page");
 const nextBtn = document.getElementById("next-page");
+const downloadBtn = document.getElementById("download-pdf");
 const zoomInBtn = document.getElementById("zoom-in");
 const zoomOutBtn = document.getElementById("zoom-out");
 
@@ -165,7 +167,7 @@ const renderPage = (num) => {
 		});
 
 		// updating page counters and saving state
-		pageNumSpan.textContent = num;
+		pageNumDisplay.textContent = num;
 		saveCurrentPage(num);
 		updateButtons();
 	});
@@ -205,6 +207,19 @@ const goToFirstPage = () => {
 	pageNum = 1;
 	queueRenderPage(pageNum);
 	updateButtons();
+};
+
+// going to specific page
+const goToPage = (targetPage) => {
+	const page = parseInt(targetPage);
+	if (isNaN(page) || page < 1 || page > pdfDoc.numPages || page === pageNum) return false;
+	
+	const direction = page > pageNum ? "next" : "prev";
+	addPageTransition(direction);
+	pageNum = page;
+	queueRenderPage(pageNum);
+	updateButtons();
+	return true;
 };
 
 // checking if user has seen home button before
@@ -288,6 +303,10 @@ nextBtn.addEventListener("click", (e) => {
 	addClickFeedback(e.target);
 	showNextPage();
 });
+downloadBtn.addEventListener("click", (e) => {
+	addClickFeedback(e.target);
+	// download functionality is handled by the browser via the download attribute
+});
 zoomInBtn.addEventListener("click", (e) => {
 	addClickFeedback(e.target);
 	zoomIn();
@@ -295,6 +314,40 @@ zoomInBtn.addEventListener("click", (e) => {
 zoomOutBtn.addEventListener("click", (e) => {
 	addClickFeedback(e.target);
 	zoomOut();
+});
+
+// page number input functionality
+pageNumDisplay.addEventListener("click", () => {
+	pageNumDisplay.style.display = "none";
+	pageNumInput.style.display = "block";
+	pageNumInput.value = pageNum;
+	pageNumInput.max = pdfDoc ? pdfDoc.numPages : 999;
+	pageNumInput.focus();
+	pageNumInput.select();
+});
+
+// handling input submission
+const submitPageInput = () => {
+	const targetPage = pageNumInput.value;
+	pageNumInput.style.display = "none";
+	pageNumDisplay.style.display = "inline";
+	
+	if (targetPage && goToPage(targetPage)) {
+		// successfully navigated to new page
+	} else {
+		// invalid page, reset display
+		pageNumDisplay.textContent = pageNum;
+	}
+};
+
+pageNumInput.addEventListener("blur", submitPageInput);
+pageNumInput.addEventListener("keydown", (e) => {
+	if (e.key === "Enter") {
+		submitPageInput();
+	} else if (e.key === "Escape") {
+		pageNumInput.style.display = "none";
+		pageNumDisplay.style.display = "inline";
+	}
 });
 
 // keyboard navigation
