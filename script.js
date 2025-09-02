@@ -71,14 +71,14 @@ const pdfContainer = document.getElementById("pdf-container");
 const loadingDiv = document.getElementById("loading");
 
 // getting elements
-const pageDisplay = document.getElementById("page-display");      // the clickable "13 / 14" text display that shows current page info
-const pageNumInput = document.getElementById("page-num-input");   // the input field that replaces pageDisplay when editing page number
-const homeBtn = document.getElementById("home-page");            // the home button that goes to the first page
-const prevBtn = document.getElementById("prev-page");            // the previous button that goes to the previous page
-const nextBtn = document.getElementById("next-page");            // the next button that goes to the next page
-const downloadBtn = document.getElementById("download-pdf");      // the download button that downloads the portfolio
-const zoomInBtn = document.getElementById("zoom-in");            // the zoom in button that zooms in the portfolio
-const zoomOutBtn = document.getElementById("zoom-out");            // the zoom out button that zooms out the portfolio
+const pageDisplay = document.getElementById("page-display"); // the clickable "13 / 14" text display that shows current page info
+const pageNumInput = document.getElementById("page-num-input"); // the input field that replaces pageDisplay when editing page number
+const homeBtn = document.getElementById("home-page"); // the home button that goes to the first page
+const prevBtn = document.getElementById("prev-page"); // the previous button that goes to the previous page
+const nextBtn = document.getElementById("next-page"); // the next button that goes to the next page
+const downloadBtn = document.getElementById("download-pdf"); // the download button that downloads the portfolio
+const zoomInBtn = document.getElementById("zoom-in"); // the zoom in button that zooms in the portfolio
+const zoomOutBtn = document.getElementById("zoom-out"); // the zoom out button that zooms out the portfolio
 
 // storing total pages for display updates
 let totalPages = 0;
@@ -87,9 +87,12 @@ let totalPages = 0;
 const setDownloadFilename = () => {
 	const d = new Date();
 	const yyyy = d.getFullYear();
-	const mm = String(d.getMonth() + 1).padStart(2, '0');
-	const dd = String(d.getDate()).padStart(2, '0');
-	downloadBtn.setAttribute('download', `Le_Hoang_Anh_Ngo_Portfolio_${yyyy}_${mm}_${dd}.pdf`);
+	const mm = String(d.getMonth() + 1).padStart(2, "0");
+	const dd = String(d.getDate()).padStart(2, "0");
+	downloadBtn.setAttribute(
+		"download",
+		`Le_Hoang_Anh_Ngo_Portfolio_${yyyy}_${mm}_${dd}.pdf`,
+	);
 };
 
 // setting initial filename and updating it periodically (in case user keeps page open past midnight)
@@ -182,7 +185,7 @@ const renderPage = (num) => {
 		});
 
 		// updating page counters and saving state
-		pageDisplay.innerHTML = `${num} / ${totalPages}`;  // updating the "X / 14" display text
+		pageDisplay.innerHTML = `${num} / ${totalPages}`; // updating the "X / 14" display text
 		saveCurrentPage(num);
 		updateButtons();
 	});
@@ -227,8 +230,9 @@ const goToFirstPage = () => {
 // going to specific page
 const goToPage = (targetPage) => {
 	const page = parseInt(targetPage);
-	if (isNaN(page) || page < 1 || page > pdfDoc.numPages || page === pageNum) return false;
-	
+	if (isNaN(page) || page < 1 || page > pdfDoc.numPages || page === pageNum)
+		return false;
+
 	const direction = page > pageNum ? "next" : "prev";
 	addPageTransition(direction);
 	pageNum = page;
@@ -258,7 +262,7 @@ const markHomeButtonSeen = () => {
 // adding first-time highlight effect
 const addFirstTimeHighlight = () => {
 	homeBtn.classList.add("home-button-first-time");
-	
+
 	// removing the highlight after animation completes
 	setTimeout(() => {
 		homeBtn.classList.remove("home-button-first-time");
@@ -270,16 +274,15 @@ const addFirstTimeHighlight = () => {
 const updateButtons = () => {
 	const wasHidden = homeBtn.style.display === "none";
 	const shouldShow = pageNum > 1;
-	
+
 	prevBtn.disabled = pageNum <= 1;
 	nextBtn.disabled = pageNum >= pdfDoc.numPages;
 	homeBtn.style.display = shouldShow ? "inline-block" : "none";
-	
+
 	// if button just became visible and user hasn't seen it before, highlighting it first time
 	if (wasHidden && shouldShow && !hasSeenHomeButton()) {
 		setTimeout(() => addFirstTimeHighlight(), 200); // Small delay for smooth transition
 	}
-	
 };
 
 // zoom functions
@@ -318,11 +321,45 @@ nextBtn.addEventListener("click", (e) => {
 	addClickFeedback(e.target);
 	showNextPage();
 });
-downloadBtn.addEventListener("click", (e) => {
+downloadBtn.addEventListener("click", async (e) => {
+	e.preventDefault(); // preventing default link behavior
 	addClickFeedback(e.target);
-	// ensuring filename is current right before download
-	setDownloadFilename();
-	// download functionality is handled by the browser via the download attribute
+
+	try {
+		// fetching the PDF file
+		const response = await fetch("portfolio.pdf");
+		const blob = await response.blob();
+
+		// creating a download URL
+		const url = window.URL.createObjectURL(blob);
+
+		// creating a temporary download link with current date
+		const d = new Date();
+		const yyyy = d.getFullYear();
+		const mm = String(d.getMonth() + 1).padStart(2, "0");
+		const dd = String(d.getDate()).padStart(2, "0");
+		const filename = `Le_Hoang_Anh_Ngo_Portfolio_${yyyy}_${mm}_${dd}.pdf`;
+
+		// creating a temporary download link
+		const tempLink = document.createElement("a");
+		tempLink.href = url;
+		tempLink.download = filename;
+
+		// appending the temporary download link to the body
+		document.body.appendChild(tempLink);
+		tempLink.click();
+
+		// removing the temporary download link from the body
+		document.body.removeChild(tempLink);
+
+		// cleaning up the URL object
+		window.URL.revokeObjectURL(url);
+	} catch (error) {
+		console.error("Download failed:", error);
+		// fallback to original download method in case of error
+		setDownloadFilename();
+		window.open("portfolio.pdf", "_blank");
+	}
 });
 zoomInBtn.addEventListener("click", (e) => {
 	addClickFeedback(e.target);
@@ -336,12 +373,12 @@ zoomOutBtn.addEventListener("click", (e) => {
 // page number input functionality - content replace approach
 // when user clicks the "13 / 14" display, it gets hidden and replaced with an input field
 const activatePageInput = () => {
-	pageDisplay.style.display = "none";              // hiding the "X / 14" text display
-	pageNumInput.style.display = "block";            // showing the input field in its place
-	pageNumInput.value = pageNum;                     // pre-filling input with current page (e.g., "13")
+	pageDisplay.style.display = "none"; // hiding the "X / 14" text display
+	pageNumInput.style.display = "block"; // showing the input field in its place
+	pageNumInput.value = pageNum; // pre-filling input with current page (e.g., "13")
 	pageNumInput.max = pdfDoc ? pdfDoc.numPages : 99; // setting max allowed value
-	pageNumInput.focus();                             // focusing the input
-	pageNumInput.select();                            // selecting all text for easy editing
+	pageNumInput.focus(); // focusing the input
+	pageNumInput.select(); // selecting all text for easy editing
 };
 
 pageDisplay.addEventListener("click", activatePageInput);
@@ -357,9 +394,9 @@ pageDisplay.addEventListener("keydown", (e) => {
 // handling input submission - restoring display and navigating if valid
 const submitPageInput = () => {
 	const targetPage = pageNumInput.value;
-	pageNumInput.style.display = "none";             // hiding the input field
-	pageDisplay.style.display = "inline-block";      // showing the "X / 14" display again
-	
+	pageNumInput.style.display = "none"; // hiding the input field
+	pageDisplay.style.display = "inline-block"; // showing the "X / 14" display again
+
 	if (targetPage && goToPage(targetPage)) {
 		// successfully navigated to new page - pageDisplay will be updated by renderPage()
 	} else {

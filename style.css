@@ -148,8 +148,8 @@ body {
 }
 
 .zoom-group button {
-  min-width: 36px;
-  width: 36px;
+  min-width: 40px;
+  width: 40px;
   height: 36px;
   border-radius: 10px;
   padding: 0;
@@ -194,6 +194,22 @@ body {
   border-color: rgba(0, 0, 0, 0.12);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Section-specific hover colors */
+.nav-group button:hover {
+  background: rgba(59, 130, 246, 0.12) !important;
+  border-color: rgba(59, 130, 246, 0.25) !important;
+}
+
+.zoom-group button:hover {
+  background: rgba(168, 85, 247, 0.08) !important;
+  border-color: rgba(168, 85, 247, 0.2) !important;
+}
+
+.document-actions a:hover {
+  background: rgba(249, 115, 22, 0.08) !important;
+  border-color: rgba(249, 115, 22, 0.2) !important;
 }
 
 .controls button:active,
@@ -260,15 +276,22 @@ body {
   outline-offset: 2px;
 }
 
+.page-info:hover {
+  background: rgba(59, 130, 246, 0.12) !important;
+  border-color: rgba(59, 130, 246, 0.25) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
 .clickable-page-full:hover {
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
+  background: transparent !important;
+  border-color: transparent !important;
 }
 
 .clickable-page-full:focus {
   outline: 2px solid rgba(59, 130, 246, 0.6);
   outline-offset: -2px;
-  background: rgba(59, 130, 246, 0.05);
+  background: rgba(59, 130, 246, 0.08);
 }
 
 #page-num-input {
@@ -282,7 +305,9 @@ body {
   background: rgba(255, 255, 255, 0.95);
   color: #333;
   outline: none;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", system-ui, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", system-ui,
+    sans-serif;
   font-variant-numeric: tabular-nums;
   padding: 8px 12px;
   margin: 0;
@@ -669,14 +694,14 @@ body {
   }
   15% {
     border-color: rgba(59, 130, 246, 0.5);
-    box-shadow: 
+    box-shadow:
       0 2px 8px rgba(0, 0, 0, 0.06),
       0 0 0 2px rgba(59, 130, 246, 0.1);
     transform: translateY(-1px) scale(1.015);
   }
   75% {
     border-color: rgba(59, 130, 246, 0.4);
-    box-shadow: 
+    box-shadow:
       0 2px 8px rgba(0, 0, 0, 0.06),
       0 0 0 1px rgba(59, 130, 246, 0.08);
     transform: translateY(-0.5px) scale(1.008);
