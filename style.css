@@ -157,6 +157,12 @@ body {
   align-items: center;
   justify-content: center;
   font-size: 15px;
+}
+
+.zoom-group button svg {
+  opacity: 0.9;
+  stroke-width: 0.5px;
+  stroke: currentColor;
   font-weight: 600;
 }
 
