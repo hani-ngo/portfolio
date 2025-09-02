@@ -40,7 +40,7 @@ let pageNumIsPending = null;
 let scale = 1.5;
 let manualZoom = false;
 
-// Get initial page from localStorage or default to 1
+// getting initial page from localStorage or default to 1
 function getInitialPage() {
 	try {
 		const savedPage = localStorage.getItem("portfolio-current-page");
@@ -55,7 +55,7 @@ function getInitialPage() {
 	return 1;
 }
 
-// Save current page to localStorage
+// saving current page to localStorage
 function saveCurrentPage(pageNumber) {
 	try {
 		localStorage.setItem("portfolio-current-page", pageNumber.toString());
@@ -70,9 +70,10 @@ const ctx = canvas.getContext("2d", { willReadFrequently: true });
 const pdfContainer = document.getElementById("pdf-container");
 const loadingDiv = document.getElementById("loading");
 
-// Get elements
+// getting elements
 const pageNumSpan = document.getElementById("page-num");
 const pageCountSpan = document.getElementById("page-count");
+const homeBtn = document.getElementById("home-page");
 const prevBtn = document.getElementById("prev-page");
 const nextBtn = document.getElementById("next-page");
 const zoomInBtn = document.getElementById("zoom-in");
@@ -81,10 +82,10 @@ const zoomOutBtn = document.getElementById("zoom-out");
 const getResponsiveScale = (page) => {
 	const viewport = page.getViewport({ scale: 1.0 });
 
-	// Get the container that will hold the canvas
+	// getting the container that will hold the canvas
 	const container = pdfContainer.parentElement;
 
-	// Use most of the container space with a smaller safety margin
+	// using most of the container space with a smaller safety margin
 	const containerWidth = container.clientWidth * 0.95;
 	const containerHeight = container.clientHeight * 0.95;
 
@@ -93,13 +94,13 @@ const getResponsiveScale = (page) => {
 		containerHeight / viewport.height,
 	);
 
-	// Dynamic minimum scale based on screen resolution
-	// More granular breakpoints to handle various screen sizes properly
+	// dynamic minimum scale based on screen resolution
+	// more granular breakpoints to handle various screen sizes properly
 	const screenWidth = window.innerWidth;
 	let minScale;
 
 	if (screenWidth <= 1366) {
-		// 1366x768 (common laptop), 1280x1024, etc.
+		// 1366x768 (common laptop), 1280x1024, etc
 		minScale = 0.4;
 	} else if (screenWidth <= 1440) {
 		// 1440x900 (MacBook Air 13"), 1440x1080
@@ -108,13 +109,13 @@ const getResponsiveScale = (page) => {
 		// 1680x1050 (older iMacs), 1600x1200
 		minScale = 0.6;
 	} else if (screenWidth <= 1920) {
-		// 1920x1080 (Full HD), 1920x1200
+		// 1920x1080 (full HD), 1920x1200
 		minScale = 0.7;
 	} else if (screenWidth <= 2560) {
 		// 2560x1440 (1440p), 2560x1600 (MacBook Pro 16")
 		minScale = 0.8;
 	} else {
-		// 4K+ screens (3840x2160+), ultrawide
+		// 4K+ screens (3840x2160+), ultrawide screens
 		minScale = 0.9;
 	}
 
@@ -135,12 +136,12 @@ const addPageTransition = (direction) => {
 	}
 };
 
-// Render page
+// rendering page
 const renderPage = (num) => {
 	pageIsRendering = true;
 
 	pdfDoc.getPage(num).then((page) => {
-		// Calculate responsive scale if not manually adjusted
+		// calculating responsive scale if not manually adjusted
 		if (!manualZoom) {
 			scale = getResponsiveScale(page);
 		}
@@ -163,13 +164,14 @@ const renderPage = (num) => {
 			}
 		});
 
-		// Update page counters and save state
+		// updating page counters and saving state
 		pageNumSpan.textContent = num;
 		saveCurrentPage(num);
+		updateButtons();
 	});
 };
 
-// Check for pages rendering
+// checking for pages rendering
 const queueRenderPage = (num) => {
 	if (pageIsRendering) {
 		pageNumIsPending = num;
@@ -178,7 +180,7 @@ const queueRenderPage = (num) => {
 	}
 };
 
-// Show previous page
+// showing previous page
 const showPrevPage = () => {
 	if (pageNum <= 1) return;
 	addPageTransition("prev");
@@ -187,7 +189,7 @@ const showPrevPage = () => {
 	updateButtons();
 };
 
-// Show next page
+// showing next page
 const showNextPage = () => {
 	if (pageNum >= pdfDoc.numPages) return;
 	addPageTransition("next");
@@ -196,13 +198,61 @@ const showNextPage = () => {
 	updateButtons();
 };
 
-// Update button states
-const updateButtons = () => {
-	prevBtn.disabled = pageNum <= 1;
-	nextBtn.disabled = pageNum >= pdfDoc.numPages;
+// going to first page (home button)
+const goToFirstPage = () => {
+	if (pageNum <= 1) return;
+	addPageTransition("prev");
+	pageNum = 1;
+	queueRenderPage(pageNum);
+	updateButtons();
 };
 
-// Zoom functions
+// checking if user has seen home button before
+const hasSeenHomeButton = () => {
+	try {
+		return localStorage.getItem("portfolio-seen-home-button") === "true";
+	} catch (e) {
+		return false;
+	}
+};
+
+// marking that user has seen home button before
+const markHomeButtonSeen = () => {
+	try {
+		localStorage.setItem("portfolio-seen-home-button", "true");
+	} catch (e) {
+		// localStorage might not be available, fail silently
+	}
+};
+
+// adding first-time highlight effect
+const addFirstTimeHighlight = () => {
+	homeBtn.classList.add("home-button-first-time");
+	
+	// removing the highlight after animation completes
+	setTimeout(() => {
+		homeBtn.classList.remove("home-button-first-time");
+		markHomeButtonSeen();
+	}, 4000); // 3.5s animation + 0.5s buffer
+};
+
+// updating button states
+const updateButtons = () => {
+	const wasHidden = homeBtn.style.display === "none";
+	const shouldShow = pageNum > 1;
+	
+	prevBtn.disabled = pageNum <= 1;
+	nextBtn.disabled = pageNum >= pdfDoc.numPages;
+	homeBtn.style.display = shouldShow ? "inline-block" : "none";
+	
+	// if button just became visible and user hasn't seen it before, highlighting it first time
+	if (wasHidden && shouldShow && !hasSeenHomeButton()) {
+		setTimeout(() => addFirstTimeHighlight(), 200); // Small delay for smooth transition
+	}
+	
+};
+
+// zoom functions
 const zoomIn = () => {
 	manualZoom = true;
 	scale += 0.2;
@@ -217,7 +267,7 @@ const zoomOut = () => {
 	}
 };
 
-// Add click feedback
+// adding click feedback
 const addClickFeedback = (button) => {
 	button.style.transform = "scale(0.95)";
 	setTimeout(() => {
@@ -225,7 +275,11 @@ const addClickFeedback = (button) => {
 	}, 150);
 };
 
-// Button events
+// button events
+homeBtn.addEventListener("click", (e) => {
+	addClickFeedback(e.target);
+	goToFirstPage();
+});
 prevBtn.addEventListener("click", (e) => {
 	addClickFeedback(e.target);
 	showPrevPage();
@@ -243,9 +297,12 @@ zoomOutBtn.addEventListener("click", (e) => {
 	zoomOut();
 });
 
-// Keyboard navigation
+// keyboard navigation
 document.addEventListener("keydown", (e) => {
 	switch (e.key) {
+		case "Home":
+			goToFirstPage();
+			break;
 		case "ArrowLeft":
 			showPrevPage();
 			break;
@@ -262,23 +319,23 @@ document.addEventListener("keydown", (e) => {
 	}
 });
 
-// Window resize handler
+// window resize handler
 window.addEventListener("resize", () => {
 	if (!manualZoom && pdfDoc) {
 		queueRenderPage(pageNum);
 	}
 });
 
-// Check if mobile
+// checking if mobile
 const isMobile = () => window.innerWidth <= 768;
 
-// Mobile notification functionality
+// mobile notification functionality
 const showMobileNotification = () => {
 	if (isMobile() && !localStorage.getItem("mobile-notification-dismissed")) {
 		const notification = document.getElementById("mobile-notification");
 		notification.classList.add("show");
 
-		// Close notification functionality
+		// closing notification functionality
 		const closeBtn = document.getElementById("notification-close");
 		const closeNotification = () => {
 			notification.classList.remove("show");
@@ -287,7 +344,7 @@ const showMobileNotification = () => {
 
 		closeBtn.addEventListener("click", closeNotification);
 
-		// Auto-hide after 8 seconds
+		// auto-hide after 8 seconds
 		setTimeout(() => {
 			if (notification.classList.contains("show")) {
 				closeNotification();
@@ -296,7 +353,7 @@ const showMobileNotification = () => {
 	}
 };
 
-// Render all pages for mobile
+// rendering all pages for mobile
 const renderAllPagesForMobile = async () => {
 	const mobileContainer = document.createElement("div");
 	mobileContainer.className = "mobile-pages-container";
@@ -310,10 +367,10 @@ const renderAllPagesForMobile = async () => {
 			const containerWidth = mobileContainer.clientWidth - 30;
 			const devicePixelRatio = window.devicePixelRatio || 1;
 
-			// Scale for high DPI displays and maintain quality
+			// scaling for high DPI displays and maintain quality
 			const baseScale = containerWidth / viewport.width;
-			const qualityScale = Math.max(baseScale * devicePixelRatio, 1.5); // Minimum 1.5x scale
-			const finalScale = Math.min(qualityScale, 3.0); // Cap at 3x for performance
+			const qualityScale = Math.max(baseScale * devicePixelRatio, 1.5); // minimum 1.5x scale
+			const finalScale = Math.min(qualityScale, 3.0); // cap at 3x for performance
 
 			const scaledViewport = page.getViewport({ scale: finalScale });
 
@@ -322,7 +379,7 @@ const renderAllPagesForMobile = async () => {
 			canvas.height = scaledViewport.height;
 			canvas.width = scaledViewport.width;
 
-			// Scale canvas display size to fit container while preserving quality
+			// scaling canvas display size to fit container while preserving quality
 			const displayWidth = containerWidth;
 			const displayHeight =
 				(scaledViewport.height * displayWidth) / scaledViewport.width;
@@ -350,14 +407,14 @@ const renderAllPagesForMobile = async () => {
 	}
 };
 
-// Load PDF with enhanced loading state and progress
+// loading PDF with enhanced loading state and progress
 loadingDiv.innerHTML =
 	'<span>Loading portfolio...</span><div class="progress-bar"><div class="progress-fill"></div></div>';
 
-// Hide the CSS spinner since we're using progress bar
+// hiding the CSS spinner since we're using progress bar
 loadingDiv.classList.add("no-spinner");
 
-// Add progress tracking
+// adding progress tracking
 const loadingTask = pdfjsLib.getDocument("./portfolio.pdf");
 loadingTask.onProgress = function(progress) {
 	if (progress.loaded && progress.total) {
@@ -374,27 +431,27 @@ loadingTask.promise
 		pdfDoc = pdfDoc_;
 		pageCountSpan.textContent = pdfDoc.numPages;
 
-		// Validate page number against total pages
+		// validating page number against total pages
 		if (pageNum > pdfDoc.numPages) {
 			pageNum = 1;
 			saveCurrentPage(pageNum);
 		}
 
-		// Smooth fade out of loading
+		// smooth fade out of loading
 		loadingDiv.style.opacity = "0";
 		setTimeout(() => {
 			loadingDiv.style.display = "none";
 
 			if (isMobile()) {
-				// Mobile: render all pages vertically
+				// mobile: render all pages vertically
 				renderAllPagesForMobile();
-				// Show mobile notification after a brief delay
+				// showing mobile notification after a brief delay
 				setTimeout(showMobileNotification, 1000);
 			} else {
-				// Desktop: single page navigation
+				// desktop: single page navigation
 				pdfContainer.appendChild(canvas);
 
-				// Animate in the PDF
+				// animating in the PDF
 				canvas.style.opacity = "0";
 				canvas.style.transform = "scale(0.95)";
 

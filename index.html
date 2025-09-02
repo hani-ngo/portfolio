@@ -10,7 +10,7 @@
     />
     <meta name="author" content="Lê Hoàng Anh Ngô" />
 
-    <!-- Open Graph / Facebook -->
+    <!-- open graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://portfolio.haningo.com/" />
     <meta property="og:title" content="Portfolio | Lê Hoàng Anh Ngô" />
@@ -23,7 +23,7 @@
       content="https://portfolio.haningo.com/og-image.png"
     />
 
-    <!-- Twitter -->
+    <!-- Twitter / X.com -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="https://portfolio.haningo.com/" />
     <meta property="twitter:title" content="Portfolio | Lê Hoàng Anh Ngô" />
@@ -39,7 +39,7 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <link rel="icon" type="image/png" href="favicon.png" />
 
-    <!-- Preload critical resources -->
+    <!-- preloading critical resources -->
     <link rel="preload" href="style.css" as="style" />
     <link rel="preload" href="portfolio.pdf" as="fetch" crossorigin />
     <link
@@ -48,7 +48,7 @@
       as="script"
     />
 
-    <!-- Performance hints -->
+    <!-- performance hints -->
     <meta http-equiv="Cache-Control" content="public, max-age=86400" />
     <link rel="dns-prefetch" href="//cdnjs.cloudflare.com" />
 
@@ -65,6 +65,7 @@
       </div>
       <div class="controls">
         <div class="nav-group">
+          <button id="home-page" style="display: none;" title="Back to page 1">⌂<span class="tooltip">Back to page 1</span></button>
           <button id="prev-page" disabled>←</button>
           <span class="page-info">
             <span id="page-num">-</span> / <span id="page-count">-</span>
@@ -78,7 +79,7 @@
       </div>
     </div>
 
-    <!-- Mobile Info Notification -->
+    <!-- mobile info notification -->
     <div id="mobile-notification" class="mobile-notification">
       <div class="notification-content">
         <span class="notification-icon">📱</span>
